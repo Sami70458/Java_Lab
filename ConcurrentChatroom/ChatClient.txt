@@ -1,0 +1,39 @@
+import java.io.*;
+import java.net.*;
+
+public class ChatClient {
+    public static void main(String[] args) {
+        String host = "localhost";
+        int port = 1234;
+
+        try (
+            Socket socket = new Socket(host, port);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+        ) {
+            System.out.println("Connected to chatroom!");
+
+            // Thread to listen for messages from server
+            new Thread(() -> {
+                String serverMsg;
+                try {
+                    while ((serverMsg = in.readLine()) != null) {
+                        System.out.println(serverMsg);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Connection closed.");
+                }
+            }).start();
+
+            // Main thread for sending messages
+            String userInput;
+            while ((userInput = console.readLine()) != null) {
+                out.println(userInput);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
