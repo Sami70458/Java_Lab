@@ -1,0 +1,33 @@
+import java.io.*;
+import java.net.*;
+
+public class CalculatorClient {
+    public static void main(String[] args) {
+        String host = "localhost";
+        int port = 1234;
+
+        try (
+            Socket socket = new Socket(host, port);
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+        ) {
+            System.out.println(input.readLine()); // Welcome message
+
+            String expr;
+            while (true) {
+                System.out.print("Enter expression (or 'exit'): ");
+                expr = console.readLine();
+                output.println(expr);
+
+                if (expr.equalsIgnoreCase("exit")) break;
+
+                String response = input.readLine();
+                System.out.println(response);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

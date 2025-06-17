@@ -1,0 +1,57 @@
+import java.io.*;
+import java.net.*;
+
+public class CalculatorServer {
+    public static void main(String[] args) {
+        int port = 1234;
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Calculator Server is running on port " + port + "...");
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Client connected.");
+
+                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);
+
+                output.println("Welcome to the Calculator Server. Enter expressions like 5 + 3 or type 'exit' to quit.");
+
+                String expression;
+                while ((expression = input.readLine()) != null) {
+                    if (expression.equalsIgnoreCase("exit")) break;
+
+                    try {
+                        double result = evaluate(expression);
+                        output.println("Result: " + result);
+                    } catch (Exception e) {
+                        output.println("Invalid expression!");
+                    }
+                }
+
+                clientSocket.close();
+                System.out.println("Client disconnected.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static double evaluate(String expression) throws Exception {
+        String[] parts = expression.trim().split(" ");
+        if (parts.length != 3) throw new Exception("Invalid format");
+
+        double a = Double.parseDouble(parts[0]);
+        String operator = parts[1];
+        double b = Double.parseDouble(parts[2]);
+
+        switch (operator) {
+            case "+": return a + b;
+            case "-": return a - b;
+            case "*": return a * b;
+            case "/": 
+                if (b == 0) throw new ArithmeticException("Division by zero");
+                return a / b;
+            default: throw new Exception("Unknown operator");
+        }
+    }
+}
