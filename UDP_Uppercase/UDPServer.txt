@@ -1,0 +1,34 @@
+import java.net.*;
+
+public class UDPServer {
+    public static void main(String[] args) {
+        int port = 1234;
+
+        try (DatagramSocket serverSocket = new DatagramSocket(port)) {
+            byte[] receiveBuffer = new byte[1024];
+            byte[] sendBuffer;
+
+            System.out.println("UDP Server is running on port " + port + "...");
+
+            while (true) {
+                DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+                serverSocket.receive(receivePacket); // Receive message from client
+
+                String clientMsg = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Received from client: " + clientMsg);
+
+                String response = clientMsg.toUpperCase(); // Convert to uppercase
+                sendBuffer = response.getBytes();
+
+                InetAddress clientAddress = receivePacket.getAddress();
+                int clientPort = receivePacket.getPort();
+
+                DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress, clientPort);
+                serverSocket.send(sendPacket); // Send response back to client
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

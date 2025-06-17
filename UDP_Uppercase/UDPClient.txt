@@ -1,0 +1,33 @@
+import java.net.*;
+import java.io.*;
+
+public class UDPClient {
+    public static void main(String[] args) {
+        String serverHost = "localhost";
+        int serverPort = 1234;
+
+        try (DatagramSocket clientSocket = new DatagramSocket()) {
+            BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.print("Enter message to send: ");
+            String message = console.readLine();
+
+            byte[] sendBuffer = message.getBytes();
+            InetAddress serverAddress = InetAddress.getByName(serverHost);
+
+            DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, serverAddress, serverPort);
+            clientSocket.send(sendPacket); // Send message to server
+
+            byte[] receiveBuffer = new byte[1024];
+            DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+
+            clientSocket.receive(receivePacket); // Receive response from server
+
+            String serverResponse = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            System.out.println("Response from server: " + serverResponse);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
