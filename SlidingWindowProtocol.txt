@@ -1,0 +1,43 @@
+import java.util.Scanner;
+
+public class SlidingWindowProtocol {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("=== Go-Back-N Sliding Window Protocol Simulation ===");
+
+        System.out.print("Enter number of frames to send: ");
+        int totalFrames = sc.nextInt();
+
+        System.out.print("Enter window size: ");
+        int windowSize = sc.nextInt();
+
+        int sent = 0;
+
+        while (sent < totalFrames) {
+            int framesToSend = Math.min(windowSize, totalFrames - sent);
+
+            System.out.println("\nSender: Sending frames " + sent + " to " + (sent + framesToSend - 1));
+            for (int i = sent; i < sent + framesToSend; i++) {
+                System.out.println("Sent frame: " + i);
+            }
+
+            // Simulate random acknowledgement loss
+            System.out.print("Enter the frame number to simulate ACK lost (or -1 for no loss): ");
+            int ackLost = sc.nextInt();
+
+            if (ackLost >= sent && ackLost < sent + framesToSend) {
+                System.out.println("ACK for frame " + ackLost + " lost. Go-Back-N triggered...");
+                System.out.println("Sender: Resending frames from " + ackLost + " onward...");
+                sent = ackLost; // Go back to lost frame
+            } else {
+                sent += framesToSend;
+                System.out.println("All ACKs received. Sliding window forward.");
+            }
+        }
+
+        System.out.println("\nAll frames sent successfully!");
+
+        sc.close();
+    }
+}
