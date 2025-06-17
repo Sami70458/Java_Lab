@@ -1,0 +1,64 @@
+import java.io.*;
+import java.net.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
+public class SeniorCitizenServer {
+    public static void main(String[] args) {
+        int port = 1234;
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server started on port " + port);
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("New client connected");
+                new ClientHandler(clientSocket).start();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class ClientHandler extends Thread {
+    private Socket socket;
+
+    public ClientHandler(Socket socket) {
+        this.socket = socket;
+    }
+
+    public void run() {
+        try (
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+        ) {
+            output.println("Welcome! Please enter your DOB in ddMMyyyy format:");
+
+            String dobStr = input.readLine();
+            if (dobStr == null) return;
+
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+                LocalDate dob = LocalDate.parse(dobStr, formatter);
+                LocalDate currentDate = LocalDate.now();
+
+                int age = Period.between(dob, currentDate).getYears();
+                output.println("Your age is: " + age);
+
+                if (age >= 60) {
+                    output.println("You are a senior citizen.");
+                } else {
+                    output.println("You are not a senior citizen.");
+                }
+            } catch (DateTimeParseException e) {
+                output.println("Invalid date format. Please use ddMMyyyy.");
+            }
+
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
