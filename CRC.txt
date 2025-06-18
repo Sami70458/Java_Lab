@@ -2,14 +2,16 @@ import java.util.Scanner;
 
 public class CRC {
 
+    // XOR operation between two binary strings
     public static String xor(String a, String b) {
         StringBuilder result = new StringBuilder();
-        for (int i = 1; i < a.length(); i++) {
+        for (int i = 0; i < a.length(); i++) {
             result.append(a.charAt(i) == b.charAt(i) ? '0' : '1');
         }
         return result.toString();
     }
 
+    // Performs Modulo-2 division
     public static String mod2div(String dividend, String divisor) {
         int pick = divisor.length();
         String tmp = dividend.substring(0, pick);
@@ -18,18 +20,20 @@ public class CRC {
             if (tmp.charAt(0) == '1') {
                 tmp = xor(divisor, tmp) + dividend.charAt(pick);
             } else {
-                tmp = xor("0".repeat(pick), tmp) + dividend.charAt(pick);
+                tmp = xor("0".repeat(divisor.length()), tmp) + dividend.charAt(pick);
             }
-            pick += 1;
+            tmp = tmp.substring(1); // Left shift
+            pick++;
         }
 
+        // Final step of division
         if (tmp.charAt(0) == '1') {
             tmp = xor(divisor, tmp);
         } else {
-            tmp = xor("0".repeat(pick), tmp);
+            tmp = xor("0".repeat(divisor.length()), tmp);
         }
 
-        return tmp;
+        return tmp.substring(1); // Remainder (CRC)
     }
 
     public static void main(String[] args) {
@@ -41,27 +45,26 @@ public class CRC {
         System.out.print("Enter generator polynomial (binary): ");
         String generator = sc.next();
 
-        int dataLength = data.length();
-        int generatorLength = generator.length();
+        int genLen = generator.length();
 
-        // Append zeros
-        String appendedData = data + "0".repeat(generatorLength - 1);
+        // Append zeros to the data
+        String appendedData = data + "0".repeat(genLen - 1);
 
-        // Calculate remainder (CRC)
-        String remainder = mod2div(appendedData, generator);
+        // Calculate CRC
+        String crc = mod2div(appendedData, generator);
 
-        // Final transmitted code = data + CRC
-        String transmittedData = data + remainder;
+        // Final transmitted code = original data + crc
+        String transmitted = data + crc;
 
-        System.out.println("CRC checksum: " + remainder);
-        System.out.println("Transmitted Data (Data + CRC): " + transmittedData);
+        System.out.println("CRC checksum: " + crc);
+        System.out.println("Transmitted Data (Data + CRC): " + transmitted);
 
         // Simulate receiver checking
         System.out.print("Enter received data (binary): ");
         String received = sc.next();
 
-        String check = mod2div(received, generator);
-        if (check.contains("1")) {
+        String remainder = mod2div(received, generator);
+        if (remainder.contains("1")) {
             System.out.println("Error detected in received data.");
         } else {
             System.out.println("No error detected. Data is correct.");
