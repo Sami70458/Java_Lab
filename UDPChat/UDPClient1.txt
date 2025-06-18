@@ -1,0 +1,38 @@
+import java.net.*;
+import java.util.Scanner;
+
+public class UDPClient1 {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String serverHost = "localhost";
+        int port = 9876;
+
+        try (DatagramSocket clientSocket = new DatagramSocket()) {
+            InetAddress IPAddress = InetAddress.getByName(serverHost);
+
+            while (true) {
+                System.out.print("Enter message to send (or 'exit' to quit): ");
+                String message = scanner.nextLine();
+                if (message.equalsIgnoreCase("exit")) break;
+
+                byte[] sendData = message.getBytes();
+                byte[] receiveData = new byte[1024];
+
+                // Send to server
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                clientSocket.send(sendPacket);
+
+                // Receive response
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                clientSocket.receive(receivePacket);
+
+                String serverReply = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("FROM SERVER: " + serverReply);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            scanner.close();
+        }
+    }
+}
